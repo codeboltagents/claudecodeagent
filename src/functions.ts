@@ -9,7 +9,7 @@ export const sendUserMessageRecordNotification = (content: any, sessionId: strin
 
 // Agent text response notifications
 export const agentTextResponseNotification = (text: string) => {
-    console.log("📝 Agent Text Response:", text);
+    console.log("📝 Agent Text Response:", {text});
 };
 
 // File operation notifications
@@ -52,9 +52,9 @@ export const agentMultiEditNotification = (toolId: string, input: any) => {
 export const agentListFilesNotification = (toolId: string, input: any) => {
     console.log("📁 Agent List Files:", {
         toolId,
-        path: input.path,
-        depth: input.depth,
-        explanation: input.explanation
+        path: input.path
+        // depth: input.depth,
+        // explanation: input.explanation
     });
 };
 
@@ -100,9 +100,14 @@ export const agentBashNotification = (toolId: string, input: any) => {
 export const agentTodoWriteNotification = (toolId: string, input: any) => {
     console.log("📝 Agent Todo Write:", {
         toolId,
-        todo: input.todo || input.content,
-        filePath: input.path,
-        priority: input.priority
+        todosCount: input.todos ? input.todos.length : 0,
+        todos: input.todos ? input.todos.map((todo: any) => ({
+            id: todo.id,
+            content: todo.content,
+            status: todo.status,
+            priority: todo.priority
+        })) : []
+        // filePath: input.path || input.file_path
     });
 };
 
@@ -192,5 +197,123 @@ export const agentCustomToolNotification = (toolName: string, toolId: string, in
         toolName,
         toolId,
         input
+    });
+};
+// Tool Result Notifications
+export const todoModificationResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("✅ Todo Modification Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const fileListResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("📁 File List Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const fileReadResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("📖 File Read Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? 
+            (content.length > 200 ? `${content.substring(0, 200)}...` : content) : 
+            JSON.stringify(content, null, 2)
+    });
+};
+
+export const bashCommandResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("⚡ Bash Command Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const fileEditResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("✏️ File Edit Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const grepResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("🔍 Grep Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const taskResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("📋 Task Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const globResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("🌐 Glob Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const fileMultiEditResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("✏️ Multi Edit Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const webFetchResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("🌐 Web Fetch Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? 
+            (content.length > 300 ? `${content.substring(0, 300)}...` : content) : 
+            JSON.stringify(content, null, 2)
+    });
+};
+
+export const webSearchResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("🔍 Web Search Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const notebookReadResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("📓 Notebook Read Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? 
+            (content.length > 200 ? `${content.substring(0, 200)}...` : content) : 
+            JSON.stringify(content, null, 2)
+    });
+};
+
+export const notebookEditResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("📓 Notebook Edit Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+    });
+};
+
+export const genericToolResultNotification = (toolUseId: string, content: string | any[], isError: boolean) => {
+    console.log("🔧 Generic Tool Result:", {
+        toolUseId,
+        isError,
+        content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
     });
 };
