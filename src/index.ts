@@ -1,5 +1,6 @@
 import { query, type SDKMessage } from "@anthropic-ai/claude-code";
 import { match } from "ts-pattern";
+import codebolt from '@codebolt/codeboltjs';
 import {
     sendUserMessageRecordNotification,
     agentTextResponseNotification,
@@ -38,9 +39,6 @@ import {
     genericToolResultNotification
 } from "./functions.js";
 
-
-
-// codebolt.onMessage((userMessage) => {})
 // Map to track tool use IDs and their corresponding tool names
 const toolUseIdMap = new Map<string, string>();
 
@@ -195,27 +193,87 @@ const dispatchMessage = (message: SDKMessage) => {
 
         .otherwise(() => console.log("❓ Unknown:", message));
 
-    // Show raw JSON
+    // Show raw JSON for debugging
     console.log("\n🔍 Raw JSON:");
     console.log(JSON.stringify(message, null, 2));
 };
 
-// Main execution
-const messages: SDKMessage[] = [];
+// Function to execute Claude Code with a given prompt
+async function executeClaudeCode(prompt: string): Promise<void> {
+    try {
+        console.log(`🚀 Starting Claude Code with prompt: "${prompt}"\n`);
+        
+        const messages: SDKMessage[] = [];
+        
+        for await (const message of query({
+            prompt: prompt,
+            abortController: new AbortController(),
+            options: {
+                permissionMode: "bypassPermissions",
+                cwd: "/Users/utkarshshukla/Codebolt/cludecodeagent/claudecodeworkspace"
+            },
+        })) {
+            messages.push(message);
+            dispatchMessage(message);
+            console.log("---");
+        }
 
-console.log("🚀 Starting Claude Code query...\n");
-
-for await (const message of query({
-    prompt: "create a react website of cow store",
-    abortController: new AbortController(),
-    options: {
-        permissionMode: "bypassPermissions",
-        cwd: "/Users/utkarshshukla/Codebolt/cludecodeagent/claudecodeworkspace"
-    },
-})) {
-    messages.push(message);
-    dispatchMessage(message);
-    console.log("---");
+        console.log(`\n📊 Total messages received: ${messages.length}`);
+    } catch (error) {
+        console.error("❌ Error executing Claude Code:", error);
+        // Send error notification to UI
+        codebolt.notify.chat.AgentTextResponseNotify(
+            `Error executing Claude Code: ${error instanceof Error ? error.message : String(error)}`,
+            true // isError
+        );
+    }
 }
 
-console.log(`\n📊 Total messages received: ${messages.length}`);
+// Set up CodeboltJS message handler
+console.log("🔌 Setting up CodeboltJS message handler...");
+
+codebolt.onMessage(async (userMessage) => {
+    try {
+        console.log("📥 Received message from CodeboltJS:", userMessage);
+        
+        // Extract the message content
+        let messageContent = '';
+        
+        if (typeof userMessage === 'string') {
+            messageContent = userMessage;
+        } else if (userMessage && typeof userMessage === 'object') {
+            // Handle different message formats
+            if ('content' in userMessage && typeof userMessage.content === 'string') {
+                messageContent = userMessage.content;
+            } else if ('message' in userMessage && typeof userMessage.message === 'string') {
+                messageContent = userMessage.message;
+            } else if ('text' in userMessage && typeof userMessage.text === 'string') {
+                messageContent = userMessage.text;
+            } else {
+                // Fallback: stringify the object
+                messageContent = JSON.stringify(userMessage);
+            }
+        }
+        
+        if (!messageContent || messageContent.trim() === '') {
+            console.log("⚠️ Empty message received, skipping...");
+            return;
+        }
+        
+        console.log(`📝 Processing message: "${messageContent}"`);
+        
+        // Execute Claude Code with the received message as prompt
+        await executeClaudeCode(messageContent);
+        
+    } catch (error) {
+        console.error("❌ Error in message handler:", error);
+        // Send error notification to UI
+        codebolt.notify.chat.AgentTextResponseNotify(
+            `Error in message handler: ${error instanceof Error ? error.message : String(error)}`,
+            true // isError
+        );
+    }
+});
+
+console.log("✅ Claude Code agent is ready and listening for messages from CodeboltJS!");
+console.log("💡 Send a message through CodeboltJS to trigger Claude Code execution.");

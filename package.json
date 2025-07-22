@@ -19,6 +19,7 @@
     "dependencies": {
         "@anthropic-ai/claude-code": "^1.0.56",
         "@anthropic-ai/sdk": "^0.56.0",
+        "@codebolt/codeboltjs": "^2.0.15",
         "cli-table": "^0.3.11",
         "ts-pattern": "^5.7.1"
     }
